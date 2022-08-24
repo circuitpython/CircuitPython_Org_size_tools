@@ -114,6 +114,16 @@ def measure_sizes():
 
     :return: None
     """
+    _cur_version_size = -1
+    _cur_version_strings_size = -1
+    _changed_version_size = -1
+    _changed_version_strings_size = -1
+
+    PERCENT_DIFF_FLAG_VALUE = 5.0  # percent change from current version to trigger comment
+    BASELINE_FLAG_VALUE = 1000  # bytes or larger to trigger comment
+    PERCENT_STRINGS_FLAG_VALUE = 50  # percent of mpy file(s) to trigger comment
+
+    output_str = ""
     # read module name from pyproject.toml
     pyproject_data = toml.load("pyproject.toml")
     if "packages" in pyproject_data["tool"]["setuptools"]:
@@ -131,8 +141,9 @@ def measure_sizes():
     if os.path.isfile(os.listdir("./")[0]):
         mpy_file = os.listdir("./")[0]
         file_stats = os.stat(mpy_file)
-        print("This Branch Version:")
-        print(f"mpy file size: {file_stats.st_size} bytes")
+        output_str = "This Branch Version:\n"
+        output_str += f"mpy file size: {file_stats.st_size} bytes\n"
+        _changed_version_size = file_stats.st_size
 
         # command = ['strings', mpy_file]
         # p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.)
@@ -141,27 +152,27 @@ def measure_sizes():
 
         os.system(f"strings {mpy_file} > strings_output.txt")
         string_file_stats = os.stat("strings_output.txt")
-        print(f"strings output size: {string_file_stats.st_size} bytes")
-        print(
-            f"strings percentage of mpy: "
-            f"{(string_file_stats.st_size / file_stats.st_size) * 100.0:.2f}%"
-        )
+        output_str += f"strings output size: {string_file_stats.st_size} bytes\n"
+        output_str += f"strings percentage of mpy: " \
+                      f"{(string_file_stats.st_size / file_stats.st_size) * 100.0:.2f}%\n"
+        _changed_version_strings_size = string_file_stats.st_size
+
+
     else:
         os.chdir(os.listdir("./")[0])
         file_size, strings_size = get_sizes_from_dir("./", verbose=False)
-        print("This Branch Version:")
-        print(f"total mpy files size: {file_size} bytes")
-        print(f"strings output size: {strings_size} bytes")
+        _changed_version_size = file_size
+        _changed_version_strings_size = strings_size
+        output_str += "This Branch Version:\n"
+        output_str += f"total mpy files size: {file_size} bytes\n"
+        output_str += f"strings output size: {strings_size} bytes\n"
         if file_size != 0:
-            print(
-                f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%"
-            )
+            output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
 
     # Published Version:
-    print()
-    print("---")
-    print()
-    print("Published Version:")
+    output_str += "\n---\n"
+
+    output_str += "Published Version:\n"
     downloaded_filename = download_latest_bundle()
     os.chdir(downloaded_filename.replace(".zip", ""))
     os.chdir("lib")
@@ -170,25 +181,33 @@ def measure_sizes():
         # if it's a single mpy file
 
         file_stats = os.stat(single_mpy_file)
-        print(f"mpy file size: {file_stats.st_size} bytes")
+        output_str += f"mpy file size: {file_stats.st_size} bytes\n"
+        _cur_version_size = file_stats.st_size
+
         os.system(f"strings {single_mpy_file} > published_strings_output.txt")
         string_file_stats = os.stat("published_strings_output.txt")
-        print(f"strings output size: {string_file_stats.st_size} bytes")
-        print(
-            f"strings percentage of mpy: {(string_file_stats.st_size / file_stats.st_size) * 100.0:.2f}%"
-        )
+        output_str += f"strings output size: {string_file_stats.st_size} bytes\n"
+        output_str += f"strings percentage of mpy: {(string_file_stats.st_size / file_stats.st_size) * 100.0:.2f}%\n"
+        _cur_version_strings_size = string_file_stats.st_size
 
     else:  # single mpy file not found
         package_name = single_mpy_file.replace(".mpy", "")
         os.chdir(package_name)
         file_size, strings_size = get_sizes_from_dir("./", verbose=False)
 
-        print(f"total mpy files size: {file_size} bytes")
-        print(f"strings output size: {strings_size} bytes")
+        _changed_version_size = file_size
+        _changed_version_strings_size = strings_size
+        output_str += f"total mpy files size: {file_size} bytes\n"
+        output_str += f"strings output size: {strings_size} bytes\n"
         if file_size != 0:
-            print(
-                f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%"
-            )
+            output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
+
+    _is_changed_from_current = True
+    _is_above_baseline = False
+    _is_over_string_percentage = False
+
+    if _is_above_baseline or _is_changed_from_current or _is_over_string_percentage:
+        print(output_str)
 
 
 if __name__ == "__main__":
