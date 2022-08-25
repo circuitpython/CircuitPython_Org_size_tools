@@ -202,7 +202,7 @@ def measure_sizes():
         if file_size != 0:
             output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
 
-    _is_changed_from_current = True
+    _is_changed_from_current = False
     _is_above_baseline = False
     _is_over_string_percentage = False
 
@@ -219,7 +219,11 @@ def measure_sizes():
         _is_changed_from_current = True
 
     if _is_above_baseline or _is_changed_from_current or _is_over_string_percentage:
-        print(output_str)
+        f = open("sizes.txt", "w")
+        f.write(output_str)
+        f.close()
+
+    print(output_str)
 
 
 if __name__ == "__main__":
