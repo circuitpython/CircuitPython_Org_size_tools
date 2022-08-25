@@ -114,13 +114,15 @@ def measure_sizes():
 
     :return: None
     """
+
+    original_working_dir = os.getcwd()
     _cur_version_size = -1
     _cur_version_strings_size = -1
     _changed_version_size = -1
     _changed_version_strings_size = -1
 
     PERCENT_DIFF_FLAG_VALUE = 5.0  # percent change from current version to trigger comment
-    BASELINE_FLAG_VALUE = 2000  # bytes or larger to trigger comment
+    BASELINE_FLAG_VALUE = 1500  # bytes or larger to trigger comment
     PERCENT_STRINGS_FLAG_VALUE = 50  # percent of mpy file(s) to trigger comment
 
     output_str = ""
@@ -206,19 +208,23 @@ def measure_sizes():
     _is_above_baseline = False
     _is_over_string_percentage = False
 
+    #print(f"{_changed_version_size} > {BASELINE_FLAG_VALUE}")
     if _changed_version_size > BASELINE_FLAG_VALUE:
         _is_above_baseline = True
 
     _changed_version_strings_percent = (_changed_version_strings_size / _changed_version_size) * 100.0
+    #print(f"{_changed_version_strings_percent} > {PERCENT_STRINGS_FLAG_VALUE}")
     if _changed_version_strings_percent > PERCENT_STRINGS_FLAG_VALUE:
         _is_over_string_percentage = True
 
     _filesize_diff = abs(_changed_version_size - _cur_version_size)
     _filesize_dif_percent = (_filesize_diff / _cur_version_size) * 100.0
+    #print(f"{_filesize_dif_percent} > {PERCENT_DIFF_FLAG_VALUE}")
     if _filesize_dif_percent > PERCENT_DIFF_FLAG_VALUE:
         _is_changed_from_current = True
 
     if _is_above_baseline or _is_changed_from_current or _is_over_string_percentage:
+        os.chdir(original_working_dir)
         f = open("sizes.txt", "w")
         f.write(output_str)
         f.close()
