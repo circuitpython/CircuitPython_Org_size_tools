@@ -147,18 +147,12 @@ def measure_sizes():
         output_str += f"mpy file size: {file_stats.st_size} bytes\n"
         _changed_version_size = file_stats.st_size
 
-        # command = ['strings', mpy_file]
-        # p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.)
-        # strings_command_output = p.stdout.read()
-        # retcode = p.wait()
-
         os.system(f"strings {mpy_file} > strings_output.txt")
         string_file_stats = os.stat("strings_output.txt")
         output_str += f"strings output size: {string_file_stats.st_size} bytes\n"
         output_str += f"strings percentage of mpy: " \
                       f"{(string_file_stats.st_size / file_stats.st_size) * 100.0:.2f}%\n"
         _changed_version_strings_size = string_file_stats.st_size
-
 
     else:
         os.chdir(os.listdir("./")[0])
