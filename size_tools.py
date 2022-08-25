@@ -170,7 +170,7 @@ def measure_sizes():
             output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
 
     # Published Version:
-    output_str += "\n---\n"
+    output_str += "\n---\n\n"
 
     output_str += "Published Version:\n"
     downloaded_filename = download_latest_bundle()
