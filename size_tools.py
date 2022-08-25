@@ -120,7 +120,7 @@ def measure_sizes():
     _changed_version_strings_size = -1
 
     PERCENT_DIFF_FLAG_VALUE = 5.0  # percent change from current version to trigger comment
-    BASELINE_FLAG_VALUE = 1000  # bytes or larger to trigger comment
+    BASELINE_FLAG_VALUE = 2000  # bytes or larger to trigger comment
     PERCENT_STRINGS_FLAG_VALUE = 50  # percent of mpy file(s) to trigger comment
 
     output_str = ""
