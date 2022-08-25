@@ -206,6 +206,18 @@ def measure_sizes():
     _is_above_baseline = False
     _is_over_string_percentage = False
 
+    if _changed_version_size > BASELINE_FLAG_VALUE:
+        _is_above_baseline = True
+
+    _changed_version_strings_percent = (_changed_version_strings_size / _changed_version_size) * 100.0
+    if _changed_version_strings_percent > PERCENT_STRINGS_FLAG_VALUE:
+        _is_over_string_percentage = True
+
+    _filesize_diff = abs(_changed_version_size - _cur_version_size)
+    _filesize_dif_percent = (_filesize_diff / _cur_version_size) * 100.0
+    if _filesize_dif_percent > PERCENT_DIFF_FLAG_VALUE:
+        _is_changed_from_current = True
+
     if _is_above_baseline or _is_changed_from_current or _is_over_string_percentage:
         print(output_str)
 
