@@ -165,11 +165,43 @@ def measure_sizes():
         if file_size != 0:
             output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
 
-    # Published Version:
+    # Main Version:
+    os.chdir("main_branch_repo")
+    found_v8_mpy_zip = find_v8_mpy_zip()
+    os.chdir(found_v8_mpy_zip)
+    os.chdir(os.listdir("./")[0])
+    os.chdir("lib")
+
+    if os.path.isfile(os.listdir("./")[0]):
+        mpy_file = os.listdir("./")[0]
+        file_stats = os.stat(mpy_file)
+        output_str = "Main Branch Version:\n"
+        output_str += f"mpy file size: {file_stats.st_size} bytes\n"
+        _cur_version_size = file_stats.st_size
+
+        os.system(f"strings {mpy_file} > strings_output.txt")
+        string_file_stats = os.stat("strings_output.txt")
+        output_str += f"strings output size: {string_file_stats.st_size} bytes\n"
+        output_str += f"strings percentage of mpy: " \
+                      f"{(string_file_stats.st_size / file_stats.st_size) * 100.0:.2f}%\n"
+        _cur_version_strings_size = string_file_stats.st_size
+
+    else:
+        os.chdir(os.listdir("./")[0])
+        file_size, strings_size = get_sizes_from_dir("./", verbose=False)
+        _cur_version_size = file_size
+        _cur_version_strings_size = strings_size
+        output_str += "Main Branch Version:\n"
+        output_str += f"total mpy files size: {file_size} bytes\n"
+        output_str += f"strings output size: {strings_size} bytes\n"
+        if file_size != 0:
+            output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
+
+    """
     output_str += "\n---\n\n"
 
-    output_str += "Published Version:\n"
-    downloaded_filename = download_latest_bundle()
+    output_str += "Main Branch Version:\n"
+    #downloaded_filename = download_latest_bundle()
     os.chdir(downloaded_filename.replace(".zip", ""))
     os.chdir("lib")
     single_mpy_file = f"./{module_name}.mpy"
@@ -197,6 +229,10 @@ def measure_sizes():
         output_str += f"strings output size: {strings_size} bytes\n"
         if file_size != 0:
             output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
+    """
+
+
+
 
     _is_changed_from_current = False
     _is_above_baseline = False
