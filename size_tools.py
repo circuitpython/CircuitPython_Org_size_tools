@@ -173,10 +173,12 @@ def measure_sizes():
     os.chdir(os.listdir("./")[0])
     os.chdir("lib")
 
+    output_str += "\n---\n\n"
+
     if os.path.isfile(os.listdir("./")[0]):
         mpy_file = os.listdir("./")[0]
         file_stats = os.stat(mpy_file)
-        output_str = "Main Branch Version:\n"
+        output_str += "Main Branch Version:\n"
         output_str += f"mpy file size: {file_stats.st_size} bytes\n"
         _cur_version_size = file_stats.st_size
 
