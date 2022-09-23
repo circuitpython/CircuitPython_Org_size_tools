@@ -149,21 +149,23 @@ def measure_sizes():
 
         os.system(f"strings {mpy_file} > strings_output.txt")
         string_file_stats = os.stat("strings_output.txt")
-        output_str += f"strings output size: {string_file_stats.st_size} bytes\n"
-        output_str += f"strings percentage of mpy: " \
-                      f"{(string_file_stats.st_size / file_stats.st_size) * 100.0:.2f}%\n"
         _changed_version_strings_size = string_file_stats.st_size
+        _changed_version_strings_percentage = (string_file_stats.st_size / file_stats.st_size) * 100.0
+        output_str += f"strings output size: {_changed_version_strings_size} bytes\n"
+        output_str += f"strings percentage of mpy: " \
+                      f"{_changed_version_strings_percentage:.2f}%\n"
 
     else:
         os.chdir(os.listdir("./")[0])
         file_size, strings_size = get_sizes_from_dir("./", verbose=False)
         _changed_version_size = file_size
         _changed_version_strings_size = strings_size
+        _changed_version_strings_percentage = (strings_size / file_size) * 100.0
         output_str += "This Branch Version:\n"
         output_str += f"total mpy files size: {file_size} bytes\n"
         output_str += f"strings output size: {strings_size} bytes\n"
         if file_size != 0:
-            output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
+            output_str += f"strings percentage of mpy: {_changed_version_strings_percentage:.2f}%\n"
 
     # Main Version:
     os.chdir(original_working_dir)
@@ -181,12 +183,12 @@ def measure_sizes():
         output_str += "Main Branch Version:\n"
         output_str += f"mpy file size: {file_stats.st_size} bytes\n"
         _cur_version_size = file_stats.st_size
-
         os.system(f"strings {mpy_file} > strings_output.txt")
         string_file_stats = os.stat("strings_output.txt")
+        _cur_version_strings_percentage = (string_file_stats.st_size / file_stats.st_size) * 100.0
         output_str += f"strings output size: {string_file_stats.st_size} bytes\n"
         output_str += f"strings percentage of mpy: " \
-                      f"{(string_file_stats.st_size / file_stats.st_size) * 100.0:.2f}%\n"
+                      f"{_cur_version_strings_percentage:.2f}%\n"
         _cur_version_strings_size = string_file_stats.st_size
 
     else:
@@ -194,11 +196,12 @@ def measure_sizes():
         file_size, strings_size = get_sizes_from_dir("./", verbose=False)
         _cur_version_size = file_size
         _cur_version_strings_size = strings_size
+        _cur_version_strings_percentage = (strings_size / file_size) * 100.0
         output_str += "Main Branch Version:\n"
         output_str += f"total mpy files size: {file_size} bytes\n"
         output_str += f"strings output size: {strings_size} bytes\n"
         if file_size != 0:
-            output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
+            output_str += f"strings percentage of mpy: {_cur_version_strings_percentage:.2f}%\n"
 
     """
     output_str += "\n---\n\n"
@@ -234,22 +237,28 @@ def measure_sizes():
             output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
     """
 
+    output_str += "\n---\n\n"
+    output_str += "Summary:\n"
+    output_str += f"Mpy File Size Difference: {_changed_version_size - _cur_version_size}\n"
+    output_str += f"Mpy Strings Size Difference: {_changed_version_strings_size - _cur_version_strings_size}\n"
+    output_str += f"Mpy Strings Percentage Difference: {_changed_version_strings_percentage - _cur_version_strings_percentage}\n"
+
     _is_changed_from_current = False
     _is_above_baseline = False
     _is_over_string_percentage = False
 
-    #print(f"{_changed_version_size} > {BASELINE_FLAG_VALUE}")
+    # print(f"{_changed_version_size} > {BASELINE_FLAG_VALUE}")
     if _changed_version_size > BASELINE_FLAG_VALUE:
         _is_above_baseline = True
 
     _changed_version_strings_percent = (_changed_version_strings_size / _changed_version_size) * 100.0
-    #print(f"{_changed_version_strings_percent} > {PERCENT_STRINGS_FLAG_VALUE}")
+    # print(f"{_changed_version_strings_percent} > {PERCENT_STRINGS_FLAG_VALUE}")
     if _changed_version_strings_percent > PERCENT_STRINGS_FLAG_VALUE:
         _is_over_string_percentage = True
 
     _filesize_diff = abs(_changed_version_size - _cur_version_size)
     _filesize_dif_percent = (_filesize_diff / _cur_version_size) * 100.0
-    #print(f"{_filesize_dif_percent} > {PERCENT_DIFF_FLAG_VALUE}")
+    # print(f"{_filesize_dif_percent} > {PERCENT_DIFF_FLAG_VALUE}")
     if _filesize_dif_percent > PERCENT_DIFF_FLAG_VALUE:
         _is_changed_from_current = True
 
