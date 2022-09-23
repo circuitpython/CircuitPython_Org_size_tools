@@ -166,6 +166,7 @@ def measure_sizes():
             output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
 
     # Main Version:
+    os.chdir(original_working_dir)
     os.chdir("main_branch_repo")
     found_v8_mpy_zip = find_v8_mpy_zip()
     os.chdir(found_v8_mpy_zip)
@@ -230,9 +231,6 @@ def measure_sizes():
         if file_size != 0:
             output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
     """
-
-
-
 
     _is_changed_from_current = False
     _is_above_baseline = False
