@@ -121,7 +121,9 @@ def measure_sizes():
     _changed_version_size = -1
     _changed_version_strings_size = -1
 
-    PERCENT_DIFF_FLAG_VALUE = 5.0  # percent change from current version to trigger comment
+    PERCENT_DIFF_FLAG_VALUE = (
+        5.0  # percent change from current version to trigger comment
+    )
     BASELINE_FLAG_VALUE = 1500  # bytes or larger to trigger comment
     PERCENT_STRINGS_FLAG_VALUE = 50  # percent of mpy file(s) to trigger comment
 
@@ -150,10 +152,14 @@ def measure_sizes():
         os.system(f"strings {mpy_file} > strings_output.txt")
         string_file_stats = os.stat("strings_output.txt")
         _changed_version_strings_size = string_file_stats.st_size
-        _changed_version_strings_percentage = (string_file_stats.st_size / file_stats.st_size) * 100.0
+        _changed_version_strings_percentage = (
+            string_file_stats.st_size / file_stats.st_size
+        ) * 100.0
         output_str += f"strings output size: {_changed_version_strings_size} bytes\n"
-        output_str += f"strings percentage of mpy: " \
-                      f"{_changed_version_strings_percentage:.2f}%\n"
+        output_str += (
+            f"strings percentage of mpy: "
+            f"{_changed_version_strings_percentage:.2f}%\n"
+        )
 
     else:
         os.chdir(os.listdir("./")[0])
@@ -185,10 +191,13 @@ def measure_sizes():
         _cur_version_size = file_stats.st_size
         os.system(f"strings {mpy_file} > strings_output.txt")
         string_file_stats = os.stat("strings_output.txt")
-        _cur_version_strings_percentage = (string_file_stats.st_size / file_stats.st_size) * 100.0
+        _cur_version_strings_percentage = (
+            string_file_stats.st_size / file_stats.st_size
+        ) * 100.0
         output_str += f"strings output size: {string_file_stats.st_size} bytes\n"
-        output_str += f"strings percentage of mpy: " \
-                      f"{_cur_version_strings_percentage:.2f}%\n"
+        output_str += (
+            f"strings percentage of mpy: " f"{_cur_version_strings_percentage:.2f}%\n"
+        )
         _cur_version_strings_size = string_file_stats.st_size
 
     else:
@@ -201,7 +210,9 @@ def measure_sizes():
         output_str += f"total mpy files size: {file_size} bytes\n"
         output_str += f"strings output size: {strings_size} bytes\n"
         if file_size != 0:
-            output_str += f"strings percentage of mpy: {_cur_version_strings_percentage:.2f}%\n"
+            output_str += (
+                f"strings percentage of mpy: {_cur_version_strings_percentage:.2f}%\n"
+            )
 
     """
     output_str += "\n---\n\n"
@@ -239,9 +250,11 @@ def measure_sizes():
 
     output_str += "\n---\n\n"
     output_str += "Summary:\n"
-    output_str += f"Mpy File Size Difference: {_changed_version_size - _cur_version_size}\n"
+    output_str += (
+        f"Mpy File Size Difference: {_changed_version_size - _cur_version_size}\n"
+    )
     output_str += f"Mpy Strings Size Difference: {_changed_version_strings_size - _cur_version_strings_size}\n"
-    output_str += f"Mpy Strings Percentage Difference: {_changed_version_strings_percentage - _cur_version_strings_percentage}\n"
+    output_str += f"Mpy Strings Percentage Difference: {_changed_version_strings_percentage - _cur_version_strings_percentage:.2f}%\n"
 
     _is_changed_from_current = False
     _is_above_baseline = False
@@ -251,7 +264,9 @@ def measure_sizes():
     if _changed_version_size > BASELINE_FLAG_VALUE:
         _is_above_baseline = True
 
-    _changed_version_strings_percent = (_changed_version_strings_size / _changed_version_size) * 100.0
+    _changed_version_strings_percent = (
+        _changed_version_strings_size / _changed_version_size
+    ) * 100.0
     # print(f"{_changed_version_strings_percent} > {PERCENT_STRINGS_FLAG_VALUE}")
     if _changed_version_strings_percent > PERCENT_STRINGS_FLAG_VALUE:
         _is_over_string_percentage = True
