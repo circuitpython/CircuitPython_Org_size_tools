@@ -22,37 +22,6 @@ __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/circuitpython/CircuitPython_Org_size_tools.git"
 
 import os
-import zipfile
-import requests
-import toml
-
-
-def download_latest_bundle():
-    """
-    download teh latest bundle zip and extract it.
-
-    :return: string download_filename: the name of downloaded bundle zip file.
-    """
-    json_resp = requests.get(
-        "https://api.github.com/repos/adafruit/Adafruit_CircuitPython_Bundle/releases/latest"
-    ).json()
-
-    for asset in json_resp["assets"]:
-        if "adafruit-circuitpython-bundle-8" in asset["name"]:
-            # print(asset["browser_download_url"])
-            bundle_zip = requests.get(
-                asset["browser_download_url"], allow_redirects=True
-            )
-            download_filename = asset["browser_download_url"].split("/")[-1]
-
-            with open(download_filename, "wb") as bundle_out:
-                bundle_out.write(bundle_zip.content)
-                bundle_out.close()
-            with zipfile.ZipFile(download_filename, "r") as zip_ref:
-                zip_ref.extractall(".")
-            # shutil.move(f'{download_filename.replace(".zip", "")}/lib/', ".")
-            # shutil.move(f'{download_filename.replace(".zip", "")}/examples/', ".")
-    return download_filename
 
 
 def find_v8_mpy_zip():
@@ -114,6 +83,7 @@ def measure_sizes():
 
     :return: None
     """
+    # pylint: disable=too-many-locals, invalid-name, too-many-statements
 
     original_working_dir = os.getcwd()
     _cur_version_size = -1
@@ -128,13 +98,6 @@ def measure_sizes():
     PERCENT_STRINGS_FLAG_VALUE = 50  # percent of mpy file(s) to trigger comment
 
     output_str = ""
-    # read module name from pyproject.toml
-    pyproject_data = toml.load("pyproject.toml")
-    if "packages" in pyproject_data["tool"]["setuptools"]:
-
-        module_name = pyproject_data["tool"]["setuptools"]["packages"][0]
-    elif "py-modules" in pyproject_data["tool"]["setuptools"]:
-        module_name = pyproject_data["tool"]["setuptools"]["py-modules"][0]
 
     # New Version:
     found_v8_mpy_zip = find_v8_mpy_zip()
@@ -214,47 +177,22 @@ def measure_sizes():
                 f"strings percentage of mpy: {_cur_version_strings_percentage:.2f}%\n"
             )
 
-    """
-    output_str += "\n---\n\n"
+    _filesize_diff = _changed_version_size - _cur_version_size
+    _filesize_dif_percent = (_filesize_diff / _cur_version_size) * 100.0
 
-    output_str += "Main Branch Version:\n"
-    #downloaded_filename = download_latest_bundle()
-    os.chdir(downloaded_filename.replace(".zip", ""))
-    os.chdir("lib")
-    single_mpy_file = f"./{module_name}.mpy"
-    if os.path.exists(single_mpy_file):
-        # if it's a single mpy file
+    _strings_diff = _changed_version_strings_size - _cur_version_strings_size
+    _strings_diff_percent = (_strings_diff / _cur_version_strings_size) * 100.0
 
-        file_stats = os.stat(single_mpy_file)
-        output_str += f"mpy file size: {file_stats.st_size} bytes\n"
-        _cur_version_size = file_stats.st_size
-
-        os.system(f"strings {single_mpy_file} > published_strings_output.txt")
-        string_file_stats = os.stat("published_strings_output.txt")
-        output_str += f"strings output size: {string_file_stats.st_size} bytes\n"
-        output_str += f"strings percentage of mpy: {(string_file_stats.st_size / file_stats.st_size) * 100.0:.2f}%\n"
-        _cur_version_strings_size = string_file_stats.st_size
-
-    else:  # single mpy file not found
-        package_name = single_mpy_file.replace(".mpy", "")
-        os.chdir(package_name)
-        file_size, strings_size = get_sizes_from_dir("./", verbose=False)
-
-        _changed_version_size = file_size
-        _changed_version_strings_size = strings_size
-        output_str += f"total mpy files size: {file_size} bytes\n"
-        output_str += f"strings output size: {strings_size} bytes\n"
-        if file_size != 0:
-            output_str += f"strings percentage of mpy: {(strings_size / file_size) * 100.0:.2f}%\n"
-    """
-
+    _strings_percentage_diff = (
+        _changed_version_strings_percentage - _cur_version_strings_percentage
+    )
     output_str += "\n---\n\n"
     output_str += "Summary:\n"
+    output_str += f"mpy file size difference: {_filesize_diff}bytes | {_filesize_dif_percent:.2f}%\n"
+    output_str += f"mpy strings size difference: {_strings_diff} bytes | {_strings_diff_percent:.2f}%\n"
     output_str += (
-        f"Mpy File Size Difference: {_changed_version_size - _cur_version_size}\n"
+        f"mpy strings percentage difference: {_strings_percentage_diff:.2f}%\n"
     )
-    output_str += f"Mpy Strings Size Difference: {_changed_version_strings_size - _cur_version_strings_size}\n"
-    output_str += f"Mpy Strings Percentage Difference: {_changed_version_strings_percentage - _cur_version_strings_percentage:.2f}%\n"
 
     _is_changed_from_current = False
     _is_above_baseline = False
@@ -271,17 +209,14 @@ def measure_sizes():
     if _changed_version_strings_percent > PERCENT_STRINGS_FLAG_VALUE:
         _is_over_string_percentage = True
 
-    _filesize_diff = abs(_changed_version_size - _cur_version_size)
-    _filesize_dif_percent = (_filesize_diff / _cur_version_size) * 100.0
     # print(f"{_filesize_dif_percent} > {PERCENT_DIFF_FLAG_VALUE}")
-    if _filesize_dif_percent > PERCENT_DIFF_FLAG_VALUE:
+    if abs(_filesize_dif_percent) > PERCENT_DIFF_FLAG_VALUE:
         _is_changed_from_current = True
 
     if _is_above_baseline or _is_changed_from_current or _is_over_string_percentage:
         os.chdir(original_working_dir)
-        f = open("sizes.txt", "w")
-        f.write(output_str)
-        f.close()
+        with open("sizes.txt", "w") as f:
+            f.write(output_str)
 
     print(output_str)
 
