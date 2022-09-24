@@ -188,7 +188,7 @@ def measure_sizes():
     )
     output_str += "\n---\n\n"
     output_str += "Summary:\n"
-    output_str += f"mpy file size difference: {_filesize_diff}bytes | {_filesize_dif_percent:.2f}%\n"
+    output_str += f"mpy file size difference: {_filesize_diff} bytes | {_filesize_dif_percent:.2f}%\n"
     output_str += f"mpy strings size difference: {_strings_diff} bytes | {_strings_diff_percent:.2f}%\n"
     output_str += (
         f"mpy strings percentage difference: {_strings_percentage_diff:.2f}%\n"
